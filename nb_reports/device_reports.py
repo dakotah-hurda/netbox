@@ -9,208 +9,208 @@ class hostname_compliancy(Report):
     Features: Global uniqueness, hyphenated-field check, attribute-assignment check, field-content check, device-id regex.
     """
 
-    # def hostname_check4(self, device, name_hyphen_check):
-    #     import re
+    def hostname_check4(self, device, name_hyphen_check):
+        import re
 
-    #     # The below section established our baseline variables for use in this function.
+        # The below section established our baseline variables for use in this function.
 
-    #     site = device.site.slug
-    #     role = device.device_role.slug
+        site = device.site.slug
+        role = device.device_role.slug
 
-    #     fld1 = name_hyphen_check[0] 
-    #     fld2 = name_hyphen_check[1] 
-    #     fld3 = name_hyphen_check[2]
-    #     fld4 = name_hyphen_check[3]
+        fld1 = name_hyphen_check[0] 
+        fld2 = name_hyphen_check[1] 
+        fld3 = name_hyphen_check[2]
+        fld4 = name_hyphen_check[3]
 
-    #     ant_site = fld1                         # 633
-    #     ant_loc = fld1 + "-" + fld2             # 633-fl11
-    #     ant_rack = ant_loc + "-" + fld3         # 633-fl11-nr01
+        ant_site = fld1                         # 633
+        ant_loc = fld1 + "-" + fld2             # 633-fl11
+        ant_rack = ant_loc + "-" + fld3         # 633-fl11-nr01
 
-    #     # The below section confirms attributes are assigned in Netbox and fails the device if they are not. 
+        # The below section confirms attributes are assigned in Netbox and fails the device if they are not. 
 
-    #     nb_assignment_check = False 
+        nb_assignment_check = False 
 
-    #     if device.location is not None:
-    #         location = device.location.slug
+        if device.location is not None:
+            location = device.location.slug
             
-    #         if device.rack is not None:
-    #             rack = device.rack.name
-    #             nb_assignment_check = True
+            if device.rack is not None:
+                rack = device.rack.name
+                nb_assignment_check = True
             
-    #         elif device.rack is None:
-    #             self.log_failure(device, "Device is not assigned to a network rack.")
+            elif device.rack is None:
+                self.log_failure(device, "Device is not assigned to a network rack.")
         
-    #     elif device.location is None:
-    #         self.log_failure(device, "Device is not assigned to a location.")
+        elif device.location is None:
+            self.log_failure(device, "Device is not assigned to a location.")
 
-    #     # The below section evaluates the device's role and comes up with a hostname 'type' for it. Example: sw, rt, ap
-    #     # TODO: This could be improved by making a custom variable assigned to each device role, then querying it from Netbox. But, I am lazy. 
+        # The below section evaluates the device's role and comes up with a hostname 'type' for it. Example: sw, rt, ap
+        # TODO: This could be improved by making a custom variable assigned to each device role, then querying it from Netbox. But, I am lazy. 
 
-    #     role_id = { 
-    #         'lab-routers': 'rt', 
-    #         'production-routers': 'rt',
+        role_id = { 
+            'lab-routers': 'rt', 
+            'production-routers': 'rt',
             
-    #         'lab-switches': 'sw',
-    #         'production-switches': 'sw',
+            'lab-switches': 'sw',
+            'production-switches': 'sw',
             
-    #         'lab-aps': 'ap',
-    #         'production-aps': 'ap', 
+            'lab-aps': 'ap',
+            'production-aps': 'ap', 
             
-    #         'lab-fws': 'fw',
-    #         'production-fws': 'fw', 
+            'lab-fws': 'fw',
+            'production-fws': 'fw', 
 
-    #         'production-lte': 'cp',
-    #         'production-ups': 'ups',
+            'production-lte': 'cp',
+            'production-ups': 'ups',
 
-    #     }
+        }
 
-    #     if role in role_id.keys():
-    #         dv_role_id = role_id[role]
+        if role in role_id.keys():
+            dv_role_id = role_id[role]
         
-    #     elif role not in role_id.keys():
-    #         self.log_failure(device, "Either the device role is misconfigured, or it has a role that has not been added to this script. See 'role_id' var in report.")
+        elif role not in role_id.keys():
+            self.log_failure(device, "Either the device role is misconfigured, or it has a role that has not been added to this script. See 'role_id' var in report.")
         
-    #     # The below section evaluates if all field-values match their assigned Netbox counterparts. 
+        # The below section evaluates if all field-values match their assigned Netbox counterparts. 
 
-    #     if nb_assignment_check == True:
+        if nb_assignment_check == True:
             
-    #         if ant_site == site:
-    #             if ant_loc == location:
-    #                 if ant_rack == rack:
+            if ant_site == site:
+                if ant_loc == location:
+                    if ant_rack == rack:
                         
-    #                     pattern = f'{dv_role_id}\d\d' # Hostname uniqueness was already checked earlier in the script, so no need to check here.
-    #                     result = re.match(pattern, fld4)
+                        pattern = f'{dv_role_id}\d\d' # Hostname uniqueness was already checked earlier in the script, so no need to check here.
+                        result = re.match(pattern, fld4)
 
-    #                     if result:
-    #                         self.log_success(device, "All parameters meet hostname standard.")
-    #                     else:
-    #                         self.log_failure(device, f"Field-4 '{fld4} does not equal allowed pattern: {dv_role_id}\d\d")
+                        if result:
+                            self.log_success(device, "All parameters meet hostname standard.")
+                        else:
+                            self.log_failure(device, f"Field-4 '{fld4} does not equal allowed pattern: {dv_role_id}\d\d")
                         
-    #                 elif ant_rack != rack:
-    #                     self.log_failure(device, f"Field-3 '{ant_rack}' does not equal assigned rack: '{rack}'")
-    #             elif ant_loc != location:
-    #                 self.log_failure(device, f"Field-2 '{ant_loc}' does not equal assigned location: '{location}'")
-    #         elif ant_site != site:
-    #             self.log_failure(device, f"Field-1 '{ant_site}' does not equal assigned site: '{site}'")
+                    elif ant_rack != rack:
+                        self.log_failure(device, f"Field-3 '{ant_rack}' does not equal assigned rack: '{rack}'")
+                elif ant_loc != location:
+                    self.log_failure(device, f"Field-2 '{ant_loc}' does not equal assigned location: '{location}'")
+            elif ant_site != site:
+                self.log_failure(device, f"Field-1 '{ant_site}' does not equal assigned site: '{site}'")
                           
-    # def hostname_check5(self, device, name_hyphen_check):
-    #     import re
+    def hostname_check5(self, device, name_hyphen_check):
+        import re
 
-    #     # The below section established our baseline variables for use in this function.
+        # The below section established our baseline variables for use in this function.
 
-    #     site = device.site.slug
-    #     role = device.device_role.slug
+        site = device.site.slug
+        role = device.device_role.slug
 
-    #     fld1 = name_hyphen_check[0] 
-    #     fld2 = name_hyphen_check[1] 
-    #     fld3 = name_hyphen_check[2]
-    #     fld4 = name_hyphen_check[3]
-    #     fld5 = name_hyphen_check[4]
+        fld1 = name_hyphen_check[0] 
+        fld2 = name_hyphen_check[1] 
+        fld3 = name_hyphen_check[2]
+        fld4 = name_hyphen_check[3]
+        fld5 = name_hyphen_check[4]
 
-    #     ant_site = fld1                             # zoo
-    #     ant_loc = fld1 + "-" + fld2 + "-" + fld3    # zoo-admin-fl00
-    #     ant_rack = ant_loc + "-" + fld4             # zoo-admin-fl00-nr01
+        ant_site = fld1                             # zoo
+        ant_loc = fld1 + "-" + fld2 + "-" + fld3    # zoo-admin-fl00
+        ant_rack = ant_loc + "-" + fld4             # zoo-admin-fl00-nr01
 
-    #     # The below section confirms attributes are assigned in Netbox and fails the device if they are not. 
+        # The below section confirms attributes are assigned in Netbox and fails the device if they are not. 
 
-    #     nb_assignment_check = False 
+        nb_assignment_check = False 
 
-    #     if device.location is not None:
-    #         location = device.location.slug
+        if device.location is not None:
+            location = device.location.slug
             
-    #         if device.rack is not None:
-    #             rack = device.rack.name
-    #             nb_assignment_check = True
+            if device.rack is not None:
+                rack = device.rack.name
+                nb_assignment_check = True
             
-    #         elif device.rack is None:
-    #             self.log_failure(device, "Device is not assigned to a network rack.")
+            elif device.rack is None:
+                self.log_failure(device, "Device is not assigned to a network rack.")
         
-    #     elif device.location is None:
-    #         self.log_failure(device, "Device is not assigned to a location.")
+        elif device.location is None:
+            self.log_failure(device, "Device is not assigned to a location.")
 
-    #     # The below section evaluates the device's role and comes up with a hostname 'type' for it. Example: sw, rt, ap
-    #     # TODO: This could be improved by making a custom variable assigned to each device role, then querying it from Netbox. But, I am lazy. 
+        # The below section evaluates the device's role and comes up with a hostname 'type' for it. Example: sw, rt, ap
+        # TODO: This could be improved by making a custom variable assigned to each device role, then querying it from Netbox. But, I am lazy. 
 
-    #     role_id = { 
-    #         'lab-routers': 'rt', 
-    #         'production-routers': 'rt',
+        role_id = { 
+            'lab-routers': 'rt', 
+            'production-routers': 'rt',
             
-    #         'lab-switches': 'sw',
-    #         'production-switches': 'sw',
+            'lab-switches': 'sw',
+            'production-switches': 'sw',
             
-    #         'lab-aps': 'ap',
-    #         'production-aps': 'ap', 
+            'lab-aps': 'ap',
+            'production-aps': 'ap', 
             
-    #         'lab-fws': 'fw',
-    #         'production-fws': 'fw', 
+            'lab-fws': 'fw',
+            'production-fws': 'fw', 
 
-    #         'production-lte': 'cp',
-    #         'production-ups': 'ups',
+            'production-lte': 'cp',
+            'production-ups': 'ups',
 
-    #     }
+        }
 
-    #     if role in role_id.keys():
-    #         dv_role_id = role_id[role]
+        if role in role_id.keys():
+            dv_role_id = role_id[role]
         
-    #     elif role not in role_id.keys():
-    #         self.log_failure(device, "Either the device role is misconfigured, or it has a role that has not been added to this script. See 'role_id' var in report.")
+        elif role not in role_id.keys():
+            self.log_failure(device, "Either the device role is misconfigured, or it has a role that has not been added to this script. See 'role_id' var in report.")
         
-    #     # The below section evaluates if all field-values match their assigned Netbox counterparts. 
+        # The below section evaluates if all field-values match their assigned Netbox counterparts. 
 
-    #     if nb_assignment_check == True:
+        if nb_assignment_check == True:
             
-    #         if ant_site == site:
-    #             if ant_loc == location:
-    #                 if ant_rack == rack:
+            if ant_site == site:
+                if ant_loc == location:
+                    if ant_rack == rack:
 
-    #                     pattern = f'{dv_role_id}\d\d' # Hostname uniqueness was already checked earlier in the script, so no need to check here.
-    #                     result = re.match(pattern, fld5)
+                        pattern = f'{dv_role_id}\d\d' # Hostname uniqueness was already checked earlier in the script, so no need to check here.
+                        result = re.match(pattern, fld5)
 
-    #                     if result:
-    #                         self.log_success(device, "All parameters meet hostname standard.")
-    #                     else:
-    #                         self.log_failure(device, f"Field-5 '{fld5} does not equal allowed pattern: {dv_role_id}\d\d")
+                        if result:
+                            self.log_success(device, "All parameters meet hostname standard.")
+                        else:
+                            self.log_failure(device, f"Field-5 '{fld5} does not equal allowed pattern: {dv_role_id}\d\d")
                         
-    #                 elif ant_rack != rack:
-    #                     self.log_failure(device, f"Field-3 '{ant_rack}' does not equal assigned rack: '{rack}'")
-    #             elif ant_loc != location:
-    #                 self.log_failure(device, f"Field-2 '{ant_loc}' does not equal assigned location: '{location}'")
-    #         elif ant_site != site:
-    #             self.log_failure(device, f"Field-1 '{ant_site}' does not equal assigned site: '{site}'")
+                    elif ant_rack != rack:
+                        self.log_failure(device, f"Field-3 '{ant_rack}' does not equal assigned rack: '{rack}'")
+                elif ant_loc != location:
+                    self.log_failure(device, f"Field-2 '{ant_loc}' does not equal assigned location: '{location}'")
+            elif ant_site != site:
+                self.log_failure(device, f"Field-1 '{ant_site}' does not equal assigned site: '{site}'")
                                   
-    # def test_hostname_compliancy(self):
+    def test_hostname_compliancy(self):
         
-    #     all_hostnames = []
+        all_hostnames = []
 
-    #     for device in Device.objects.filter(status=DeviceStatusChoices.STATUS_ACTIVE):
-    #         if device.name in all_hostnames:
-    #             self.log_failure(device, "Hostname is not globally unique within Netbox.")
+        for device in Device.objects.filter(status=DeviceStatusChoices.STATUS_ACTIVE):
+            if device.name in all_hostnames:
+                self.log_failure(device, "Hostname is not globally unique within Netbox.")
 
-    #         else:
-    #             all_hostnames.append(device.name)
+            else:
+                all_hostnames.append(device.name)
 
-    #     for device in Device.objects.filter(status=DeviceStatusChoices.STATUS_ACTIVE):
+        for device in Device.objects.filter(status=DeviceStatusChoices.STATUS_ACTIVE):
 
-    #         name_hyphen_check = str(device.name).split("-")
+            name_hyphen_check = str(device.name).split("-")
 
-    #         if len(name_hyphen_check) < 4:
-    #             self.log_failure(device, "Hostname does not have enough hyphenated fields.")
-    #             continue
+            if len(name_hyphen_check) < 4:
+                self.log_failure(device, "Hostname does not have enough hyphenated fields.")
+                continue
 
-    #         elif len(name_hyphen_check) == 4:
-    #             # self.log_info(device, "Device has 4 hyphenated fields. Parsing hostname contents now.")
+            elif len(name_hyphen_check) == 4:
+                # self.log_info(device, "Device has 4 hyphenated fields. Parsing hostname contents now.")
 
-    #             self.hostname_check4(device, name_hyphen_check)
+                self.hostname_check4(device, name_hyphen_check)
 
-    #         elif len(name_hyphen_check) == 5:
-    #             # self.log_info(device, "Device has 5 hyphenated fields. Parsing hostname contents now.")
+            elif len(name_hyphen_check) == 5:
+                # self.log_info(device, "Device has 5 hyphenated fields. Parsing hostname contents now.")
                 
-    #             self.hostname_check5(device, name_hyphen_check)
+                self.hostname_check5(device, name_hyphen_check)
                 
 
-    #         elif len(name_hyphen_check) > 5:
-    #             self.log_failure(device, "Hostname has too many hyphenated fields.")
-    #             continue
+            elif len(name_hyphen_check) > 5:
+                self.log_failure(device, "Hostname has too many hyphenated fields.")
+                continue
 
     def retrieve_napalm_driver(self, device):
         
